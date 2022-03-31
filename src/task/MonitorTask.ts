@@ -159,13 +159,6 @@ export default class MonitorTask
     }
   }
 
-  videoReceiveBandwidthDidChange(newBandwidthKbps: number, oldBandwidthKbps: number): void {
-    this.logger.debug(() => {
-      return `receiving bandwidth changed from prev=${oldBandwidthKbps} Kbps to curr=${newBandwidthKbps} Kbps`;
-    });
-    this.currentVideoDownlinkBandwidthEstimationKbps = newBandwidthKbps;
-  }
-
   private checkResubscribe(clientMetricReport: ClientMetricReport): boolean {
     if (this.isResubscribeCheckPaused) {
       this.context.logger.info(
@@ -235,6 +228,23 @@ export default class MonitorTask
       return;
     }
 
+    const metricReport = clientMetricReport.getObservableMetrics();
+    /* istanbul ignore else */
+    if (this.context.videoTileController.hasStartedLocalVideoTile()) {
+      let videoUpstreamBitrateKbps = 0;
+      const videoUpstreamPacketPerSecond = metricReport.videoPacketSentPerSecond;
+      const videoUpstreamBitrate = metricReport.videoUpstreamBitrate;
+
+      /* istanbul ignore else */
+      if (typeof videoUpstreamBitrate === 'number' && !isNaN(videoUpstreamBitrate)) {
+        videoUpstreamBitrateKbps = videoUpstreamBitrate / 1000;
+      }
+
+      this.videoSendHealthDidChange(videoUpstreamBitrateKbps, videoUpstreamPacketPerSecond);
+    }
+
+    this.currentVideoDownlinkBandwidthEstimationKbps = metricReport.availableIncomingBitrate;
+
     const downlinkVideoStream: Map<number, StreamMetricReport> = new Map<
       number,
       StreamMetricReport
@@ -283,14 +293,11 @@ export default class MonitorTask
       }
     }
     if (fireCallback) {
-      this.logger.debug(() => {
-        return `Downlink video streams are not receiving enough data`;
-      });
-      this.context.audioVideoController.forEachObserver((observer: AudioVideoObserver) => {
-        Maybe.of(observer.videoNotReceivingEnoughData).map(f =>
-          f.bind(observer)(Array.from(videoReceivingBitrateMap.values()))
-        );
-      });
+      this.logger.info(
+        `One or more video streams are not receiving expected amounts of data ${JSON.stringify(
+          Array.from(videoReceivingBitrateMap.values())
+        )}`
+      );
     }
   }
 
@@ -360,11 +367,6 @@ export default class MonitorTask
       this.logger.info(
         `Downlink bandwidth pressure is high: estimated bandwidth ${this.currentVideoDownlinkBandwidthEstimationKbps}Kbps, required bandwidth ${requiredBandwidthKbps}Kbps`
       );
-      this.context.audioVideoController.forEachObserver((observer: AudioVideoObserver) => {
-        Maybe.of(observer.estimatedDownlinkBandwidthLessThanRequired).map(f =>
-          f.bind(observer)(this.currentVideoDownlinkBandwidthEstimationKbps, requiredBandwidthKbps)
-        );
-      });
     }
   }
 
