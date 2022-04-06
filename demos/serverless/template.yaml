@@ -35,6 +35,11 @@ Parameters:
 Conditions:
   ShouldUseEventBridge: !Equals [true, !Ref UseEventBridge]
 Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,OPTIONS'"
+      AllowHeaders: "'content-type'"
+      AllowOrigin: "'*'"
   Function:
     Runtime: nodejs14.x
     Timeout: 30

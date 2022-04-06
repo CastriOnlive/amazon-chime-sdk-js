@@ -519,7 +519,12 @@ function createLogStreamName(meetingId, attendeeId) {
 function response(statusCode, contentType, body, isBase64Encoded = false) {
   return {
     statusCode: statusCode,
-    headers: { 'Content-Type': contentType },
+    headers: {
+      'Content-Type': contentType,
+      "Access-Control-Allow-Headers" : "Content-Type",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS"
+    },
     body: body,
     isBase64Encoded,
   };
