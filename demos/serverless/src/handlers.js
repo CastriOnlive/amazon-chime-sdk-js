@@ -521,9 +521,8 @@ function response(statusCode, contentType, body, isBase64Encoded = false) {
     statusCode: statusCode,
     headers: {
       'Content-Type': contentType,
-      "Access-Control-Allow-Headers" : "Content-Type",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS"
+      "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+      "Access-Control-Allow-Origin": "*"
     },
     body: body,
     isBase64Encoded,

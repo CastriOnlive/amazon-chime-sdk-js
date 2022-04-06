@@ -37,8 +37,7 @@ Conditions:
 Globals:
   Api:
     Cors:
-      AllowMethods: "'GET,POST,PUT,OPTIONS'"
-      AllowHeaders: "'content-type'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
       AllowOrigin: "'*'"
   Function:
     Runtime: nodejs14.x
